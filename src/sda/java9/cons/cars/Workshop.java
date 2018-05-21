@@ -4,56 +4,84 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 
 public class Workshop {
 
     private ArrayList<String> supportedMark;
     private ArrayList<Part> partsInShop;
-    private BigDecimal earnings = new BigDecimal("0").setScale(2, RoundingMode.HALF_DOWN);
+    private BigDecimal earnings = new BigDecimal(0).setScale(2, RoundingMode.HALF_DOWN);
 
     private static BigDecimal PRICE_WITHOUT_REPLACMENT = new BigDecimal("50").setScale(2, RoundingMode.HALF_DOWN);
-    private static BigDecimal MARKUP = new BigDecimal("31").setScale(2, RoundingMode.HALF_DOWN);
+    private static BigDecimal profitMargin = new BigDecimal("31").setScale(2, RoundingMode.HALF_DOWN);
 
     public static void main(String[] args) {
-        Workshop workshop1 = new Workshop(randomMarks(3), randomParts());
-        Workshop workshop2 = new Workshop(randomMarks(3), randomParts());
-        Workshop workshop3 = new Workshop(randomMarks(3), randomParts());
-        Workshop workshop4 = new Workshop(randomMarks(3), randomParts());
-        Workshop workshop5 = new Workshop(randomMarks(3), randomParts());
+        Workshop workshop = new Workshop(randomMarks(4), randomParts());
+        do {
+            sleep();
+            Car car = Car.makeRandomCar();
+            System.out.println(car.toString());
+            workshop.checkIfAbleToRepair(car);
+            System.out.println(workshop.getClass().getName());
+        } while (true);
+    }
 
-        ArrayList<Car> cars = new ArrayList<>();
-        for (int i = 0; i < 10; i++) {
-            cars.add(Car.stworzLosowySamochod());
+    private void repair(Car car) {
+        for (Part brokenPart : car.getDamagedParts()){
+            for (Part shopPart : getPartsInShop()){
+                getPartsInShop().remove(shopPart);
+                car.getDamagedParts().remove(brokenPart);
+            }
         }
-        StringBuilder sb = new StringBuilder();
-        for (Car car : cars) {
-            sb.append(car.toString()).append("\n");
+    }
+
+    private BigDecimal costs(Car car) {
+        BigDecimal cost = new BigDecimal(0);
+        for (Part part : car.getDamagedParts()){
+            cost.add(part.getPrice());
         }
-        System.out.println(sb);
+        return cost.add(profitMargin);
+    }
+
+    private boolean checkIfAbleToRepair(Car car) {
+        if (supportedMark.contains(car.getMark())){
+            if (partsInShop.containsAll(car.getDamagedParts())){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static void sleep(){
+        try {
+            TimeUnit.SECONDS.sleep(((int) (Math.random() * (6 - 2) + 2)));
+        } catch(InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     public static Part[] randomParts(){
-        int numberOfParts = (int) (Math.random() * 11 + 10);
+        int numberOfParts = (int) (Math.random() * (101 - 10) + 10);
         Part[] parts = new Part[numberOfParts];
         for (int i = 0; i < numberOfParts; i++) {
-            parts[i] = randomPart((int) (Math.random() * 5), i);
+            parts[i] = randomPart((int) (Math.random() * 5));
         }
         return parts;
     }
 
-    private static Part randomPart(int partType, int i){
+    private static Part randomPart(int partType){
         switch (partType){
             default:
             case 0:
-                return new Gearbox("Gearbox" + i);
+                return new Gearbox("Gearbox");
             case 4:
-                return new Body("Body" + i);
+                return new Body("Body");
             case 3:
-                return new Breaks("Breaks" + i);
+                return new Breaks("Breaks");
             case 2:
-                return new Suspension("Suspension" + i);
+                return new Suspension("Suspension");
             case 1:
-                return new Engine("Engine" + i);
+                return new Engine("Engine");
         }
     }
 
