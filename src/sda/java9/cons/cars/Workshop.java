@@ -23,12 +23,30 @@ public class Workshop {
             Car car = Car.makeRandomCar();
             System.out.println(car.toString());
             if (workshop.checkIfAbleToRepair(car)) {
+                System.out.println(receipt(car));
                 workshop.setEarnings(workshop.getEarnings().add(workshop.costs(car)));
                 workshop.repair(car);
             }
             System.out.println("zarobki " + workshop.getEarnings());
             System.out.println("liczba czesci " + workshop.getPartsInShop().size());
         } while (true);
+    }
+
+    private static StringBuilder receipt(Car car) {
+        StringBuilder recipy = new StringBuilder();
+        BigDecimal cost = new BigDecimal(0);
+        recipy.append(" ____________________________________\n");
+        recipy.append(String.format("|%-14sRachunek%14s|\n", "", ""));
+        recipy.append(String.format("|%36s|\n", ""));
+        for (Part part : car.getDamagedParts()) {
+            recipy.append(String.format("|%-22s%14.2f|\n", part.getName(), part.getPrice()));
+            cost = cost.add(part.getPrice());
+        }
+        recipy.append(String.format("|%-22s%14.2f|\n", "Profit margin", profitMargin));
+        recipy.append(String.format("|%36s|\n", ""));
+        recipy.append(String.format("|%-22s%14.2f|\n", "Sum", cost.add(profitMargin)));
+        recipy.append("|____________________________________|\n");
+        return recipy;
     }
 
     private static Part[] twoParts(){
