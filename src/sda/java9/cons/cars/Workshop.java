@@ -17,20 +17,51 @@ public class Workshop {
 
     public static void main(String[] args) {
         Workshop workshop = new Workshop(randomMarks(4), randomParts());
+        System.out.println(workshop.toString());
         do {
             sleep();
             Car car = Car.makeRandomCar();
             System.out.println(car.toString());
-            workshop.checkIfAbleToRepair(car);
-            System.out.println(workshop.getClass().getName());
+            if (workshop.checkIfAbleToRepair(car)) {
+                workshop.setEarnings(workshop.getEarnings().add(workshop.costs(car)));
+                workshop.repair(car);
+            }
+            System.out.println("zarobki " + workshop.getEarnings());
+            System.out.println("liczba czesci " + workshop.getPartsInShop().size());
         } while (true);
     }
 
-    private void repair(Car car) {
-        for (Part brokenPart : car.getDamagedParts()){
+    private static Part[] twoParts(){
+        Part[] parts = new Part[2];
+        parts[0] = new Engine("Engine");
+        parts[1] = new Body("Body");
+        return parts;
+    }
+
+    private void repairWrong(Car car) {
+        int brokenPartNo = car.getDamagedParts().size();
+        for (Part brokenPart : car.getDamagedParts()) {
             for (Part shopPart : getPartsInShop()){
-                getPartsInShop().remove(shopPart);
-                car.getDamagedParts().remove(brokenPart);
+                if (brokenPart.getClass() == shopPart.getClass()){
+                    getPartsInShop().remove(shopPart);
+                    car.getDamagedParts().remove(brokenPart);
+                    break;
+                }
+            }
+        }
+    }
+
+    private void repair(Car car) {
+        int shopPartNo;
+        int brokenPartNo = car.getDamagedParts().size();
+        for (int i = brokenPartNo - 1; i > -1; i--) {
+            shopPartNo = getPartsInShop().size();
+            for (int j = 0; j < shopPartNo; j++){
+                if (car.getDamagedParts().get(i).getClass() == getPartsInShop().get(j).getClass()){
+                    getPartsInShop().remove(j);
+                    car.getDamagedParts().remove(i);
+                    break;
+                }
             }
         }
     }
@@ -38,18 +69,37 @@ public class Workshop {
     private BigDecimal costs(Car car) {
         BigDecimal cost = new BigDecimal(0);
         for (Part part : car.getDamagedParts()){
-            cost.add(part.getPrice());
+            cost = cost.add(part.getPrice());
         }
-        return cost.add(profitMargin);
+        cost = cost.add(profitMargin);
+        return cost;
     }
 
     private boolean checkIfAbleToRepair(Car car) {
         if (supportedMark.contains(car.getMark())){
-            if (partsInShop.containsAll(car.getDamagedParts())){
-                return true;
+            return checkIfAllParts(car);
+        }
+        System.out.println("M nie");
+        return false;
+    }
+
+    private boolean checkIfAllParts(Car car){
+        int i = 0;
+        for (Part brokenPart : car.getDamagedParts()){
+            for (Part shopPart : getPartsInShop()){
+                if (brokenPart.getClass() == shopPart.getClass()){
+                    i++;
+                    break;
+                }
             }
         }
-        return false;
+        if (i == car.getDamagedParts().size()) {
+            System.out.println("tak");
+            return true;
+        } else {
+            System.out.println("P nie");
+            return false;
+        }
     }
 
     private static void sleep(){

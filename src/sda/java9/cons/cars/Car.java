@@ -19,7 +19,7 @@ public class Car {
     public Car() {
     }
 
-    public static Car stworzLosowySamochodZPopsutymSilnikiem(){
+    public static Car makeRandomCarWithBrokenEngine(){
         Car car = makeCar();
         Engine engine = new Engine("Engine");
         ArrayList<Part> damagedParts = new ArrayList<>();
@@ -28,7 +28,7 @@ public class Car {
         return car;
     }
 
-    public static Car stworzLosowySamochod(){
+    public static Car makeRandomCar(){
         Car car = makeCar();
         int brokenPartsNo = (int) (Math.random() * 5 + 1);
         ArrayList<Part> damagedParts = new ArrayList<>();
